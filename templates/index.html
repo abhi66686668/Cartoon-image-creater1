@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cartoonify AI</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg custom-nav">
+    <div class="container">
+        <a class="navbar-brand fw-bold" href="#">
+            <i class="bi bi-palette text-primary me-2"></i>Cartoonify
+        </a>
+    </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero text-center">
+    <div class="hero-bg"></div>
+    <h1>Cartoonify Your Image</h1>
+    <p>Transform your photos into stunning cartoon art using AI-powered processing.</p>
+</section>
+
+<!-- Main Card -->
+<div class="container pb-5">
+    <div class="row glass-card">
+        <!-- Upload Section -->
+        <div class="col-md-5 upload-side">
+            <h4><i class="bi bi-cloud-arrow-up me-2"></i>Upload Image</h4>
+
+            <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                
+                <!-- Custom Upload Box -->
+                <div class="upload-box" id="drop-area" onclick="document.getElementById('file-input').click()">
+                    <input type="file" name="image" id="file-input" required accept="image/*" hidden onchange="updateFileName(this)">
+                    <i class="bi bi-image upload-icon"></i>
+                    <p class="mt-3 mb-1 fw-medium" id="file-name">Click to browse or drag & drop</p>
+                    <small class="text-muted">JPG, PNG, WEBP (Max 5MB)</small>
+                </div>
+
+                <button type="submit" class="btn cartoon-btn w-100 mt-4" id="submit-btn">
+                    <span id="btn-text">Cartoonify Image</span>
+                    <i class="bi bi-magic ms-2" id="btn-icon"></i>
+                    <div class="spinner-border spinner-border-sm text-light d-none" id="btn-spinner" role="status"></div>
+                </button>
+            </form>
+
+            <div class="tips mt-5">
+                <h5 class="fw-semibold"><i class="bi bi-stars text-warning me-2"></i>Pro Tips</h5>
+                <ul class="list-unstyled mt-3">
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Use High Quality Images</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Ensure Good Lighting</li>
+                    <li><i class="bi bi-check-circle-fill text-success me-2"></i>Clear Subject Focus</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Preview Section -->
+        <div class="col-md-7 preview-side">
+            <h4><i class="bi bi-image-fill me-2"></i>Preview</h4>
+
+            <div class="preview-box">
+                {% if image %}
+                    <img src="{{ image }}" class="img-fluid fade-in" alt="Cartoonified Image">
+                {% else %}
+                    <div class="placeholder text-center">
+                        <i class="bi bi-card-image mb-2 d-block" style="font-size: 2rem;"></i>
+                        Your cartoon image will appear here
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // File name update
+    function updateFileName(input) {
+        const fileNameEl = document.getElementById('file-name');
+        if (input.files && input.files.length > 0) {
+            fileNameEl.innerHTML = `<span class="text-primary fw-bold">${input.files[0].name}</span>`;
+            document.querySelector('.upload-box').classList.add('has-file');
+        } else {
+            fileNameEl.innerHTML = 'Click to browse or drag & drop';
+            document.querySelector('.upload-box').classList.remove('has-file');
+        }
+    }
+
+    // Loading state handling
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        if(document.getElementById('file-input').files.length > 0) {
+            document.getElementById('submit-btn').classList.add('loading');
+            document.getElementById('btn-text').textContent = 'Cartoonifying...';
+            document.getElementById('btn-icon').classList.add('d-none');
+            document.getElementById('btn-spinner').classList.remove('d-none');
+        }
+    });
+
+    // Drag and drop visual cues (optional enhancement)
+    const dropArea = document.getElementById('drop-area');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, preventDefaults, false);
+    });
+    function preventDefaults (e) { e.preventDefault(); e.stopPropagation(); }
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.add('drag-active'), false);
+    });
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, () => dropArea.classList.remove('drag-active'), false);
+    });
+    dropArea.addEventListener('drop', handleDrop, false);
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        document.getElementById('file-input').files = files;
+        updateFileName(document.getElementById('file-input'));
+    }
+</script>
+
+</body>
+</html>
